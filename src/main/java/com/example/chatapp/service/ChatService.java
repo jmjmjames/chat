@@ -20,6 +20,12 @@ public class ChatService {
                 .subscribeOn(Schedulers.boundedElastic());
     }
 
+    public Flux<Chat> getMessage(Long roomId) {
+        return chatRepository.findByRoomId(roomId)
+                .subscribeOn(Schedulers.boundedElastic());
+    }
+
+
     public Mono<Chat> setMessage(Chat chat) {
         chat.setSendAt(LocalDateTime.now());
         return chatRepository.save(chat);

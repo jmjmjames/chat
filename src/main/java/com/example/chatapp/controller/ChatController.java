@@ -26,6 +26,12 @@ public class ChatController {
         return chatService.getMessage(sender, receiver);
     }
 
+    @CrossOrigin
+    @GetMapping(value = "/room/{roomId}/chat", produces = MediaType.TEXT_EVENT_STREAM_VALUE)
+    public Flux<Chat> getMessageByRoomId(@PathVariable Long roomId) {
+        return chatService.getMessage(roomId);
+    }
+
     // Mono: data 1건 return
     @CrossOrigin
     @PostMapping("/chat")
