@@ -25,3 +25,7 @@ Spring Boot
 ## 개선 사항
 
 * 회원 로그인 기능 및 다른 프로젝트에서 채팅시에 도입시 사용
+
+### Reference
+[Spring 공식 사이트](https://docs.spring.io/spring-data/mongodb/docs/current/reference/html/#mongodb.repositories.queries)  
+[MongoDb query 사이트](https://javatechonline.com/spring-boot-mongodb-query-examples)
