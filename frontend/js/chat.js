@@ -1,95 +1,97 @@
-const eventSource = new EventSource("http://localhost:8080/sender/jm/receiver/jongmin")
+const username = prompt("아이디를 입력해주세요.");
+const roomId = prompt("채팅방 번호를 입력해주세요.");
+document.querySelector("#username").innerHTML = username;
 
-eventSource.onmessage = (event) => {
-    console.log(1, event);
+
+const eventSource = new EventSource(`http://localhost:8080/room/${roomId}/chat`)
+eventSource.onmessage = (event) => {    
     const data = JSON.parse(event.data);
-    console.log(2, data);
-    initMessage(data);
+    if (data.sender === username) {
+        initMyMessage(data);
+    } else {
+        initOtherMessage(data);
+    }
 }
 
-function getSendMessageBox(messgae, time) {
+
+function getSendMessageBox(data) {
     return `
     <div class="sent_msg">
-      <p>${messgae}</p>
-      <span class="time_date"> ${time}</span>
+      <p>${data.message}</p>
+      <span class="time_date">${data.sendAt} / ${data.sender}</span>
     </div>
     `;
 }
 
-function initMessage(data) {
+function getReceiveMessageBox(data) {
+    return `
+    <div class="received_withd_msg">
+      <p>${data.message}</p>
+      <span class="time_date">${data.sendAt} / ${data.sender}</span>
+    </div>
+    `;
+}
+
+
+function initMyMessage(data) {
     let chatBox = document.querySelector("#chat-box");
-    let messageInput = document.querySelector("#chat-outgoing-msg");
+
     let chatOutgoingBox = document.createElement("div");
     chatOutgoingBox.className = "outgoing_msg";
 
-    let time = data.sendAt.substring(11,16) + " | " + data.sendAt.substring(5, 7) + "월" + data.sendAt.substring(8, 10) + "일";
-    chatOutgoingBox.innerHTML = getSendMessageBox(data.message, time);
+    data.sendAt = data.sendAt.substring(11,16) + " | " + data.sendAt.substring(5, 7) + "월" + data.sendAt.substring(8, 10) + "일";
+    chatOutgoingBox.innerHTML = getSendMessageBox(data);
     chatBox.append(chatOutgoingBox);
-    messageInput.value = "";
+
+    document.documentElement.scrollTop = document.body.scrollHeight;
 }
 
-function getKoDate() {
-    const now = new Date();
-    const utcNow = now.getTime() + (now.getTimezoneOffset() * 60 * 1000); 
-    const koreaTimeDiff = 9 * 60 * 60 * 1000; 
-    const koreaNow = new Date(utcNow + koreaTimeDiff);
-    return koreaNow;
+function initOtherMessage(data) {
+    let chatBox = document.querySelector("#chat-box");
+
+    let chatIncomingBox = document.createElement("div");
+    chatIncomingBox.className = "received_msg";
+
+    data.sendAt = data.sendAt.substring(11,16) + " | " + data.sendAt.substring(5, 7) + "월" + data.sendAt.substring(8, 10) + "일";
+    chatIncomingBox.innerHTML = getReceiveMessageBox(data);
+    chatBox.append(chatIncomingBox);
+
+    document.documentElement.scrollTop = document.body.scrollHeight;
 }
 
 async function addMessage() {
     let messageInput = document.querySelector("#chat-outgoing-msg");
     
     if (messageInput.value.length != 0) {
-        let chatBox = document.querySelector("#chat-box");
-        let chatOutgoingBox = document.createElement("div");
-        chatOutgoingBox.className = "outgoing_msg";
-
-        let date = getKoDate();
-        let now;
-        if (date.getMonth() < 10) {
-            now = date.getHours() + ":" + date.getMinutes() + " | 0" + (date.getMonth() + 1) + "월" + date.getDate() + "일";
-        } else {
-            now = date.getHours() + ":" + date.getMinutes() + " | " + (date.getMonth() + 1) + "월" + date.getDate() + "일";
-        }
-
         let chat = {
-            sender: "jm",
-            receiver: "jongmin",
+            sender: username,
+            roomId: roomId,
             message: messageInput.value
         };
 
-        /**
-         * let response = fetch(...): response에 null이 들어감 because of 비동기통신
-         * 따라서 await를 걸어줘야한다 -> function 자체를 async 비동기 함수로 설정
-         * async 를 걸지 않으면 아래의 코드가 실행되지 않는다.(block)
-         */
-        let response = await fetch("http://localhost:8080/chat", {
+        fetch("http://localhost:8080/chat", {
             method: "post",
-            body: JSON.stringify(chat),
+            body: JSON.stringify(chat), 
             headers: {
                 "Content-type": "application/json; charset=UTF-8"
             }
         });
-
-        console.log(response);
-        
-        // await를 걸지 않으면 pending(시간이 걸려서)
-        let parseResponse = await response.json();
-        console.log(parseResponse);
-
-        chatOutgoingBox.innerHTML = getSendMessageBox(messageInput.value, now);
-        chatBox.append(chatOutgoingBox);
         messageInput.value = "";
     }
 }
 
+/**
+ * button 클릭시 메시지 전송
+ */
 document.querySelector("#chat-send").addEventListener("click", ()=> {
     addMessage();
 });
 
+/**
+ * Enter 입력시 메시지 전송
+ */
 document.querySelector("#chat-outgoing-msg").addEventListener("keydown", (e)=> {
     if (e.keyCode === 13) {
         addMessage();
     }
 });
-

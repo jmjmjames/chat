@@ -54,7 +54,10 @@ color: #212529;
   font-size: 10px;
   margin: 8px 0 0;
 }
-.received_withd_msg { width: 57%;}
+.received_withd_msg {
+  width: 57%;
+  margin-bottom: 7px;
+}
 .mesgs {
   float: left;
   padding: 30px 15px 0 25px;
@@ -69,7 +72,10 @@ color: #212529;
   padding: 5px 10px 5px 12px;
   width:100%;
 }
-.outgoing_msg{ overflow:hidden; margin:26px 0 26px;}
+.outgoing_msg {
+  overflow: hidden;
+  margin: 15px 0 8px;
+}
 .sent_msg {
   float: right;
   width: 60%;
